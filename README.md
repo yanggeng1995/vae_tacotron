@@ -102,5 +102,3 @@ An implementation of VAE Tacotron speech synthesis in TensorFlow. (https://arxiv
    
    ```
    If you set the `--hparams` flag when training, set the same value here.
-
-# vae_tacotron
