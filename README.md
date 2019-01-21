@@ -1,6 +1,6 @@
 # Tacotron
 
-An implementation of Tacotron speech synthesis in TensorFlow.
+An implementation of VAE Tacotron speech synthesis in TensorFlow. (https://arxiv.org/abs/1812.04342)
 
 
 ## Quick Start
