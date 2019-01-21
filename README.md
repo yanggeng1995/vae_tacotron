@@ -29,8 +29,6 @@ An implementation of VAE Tacotron speech synthesis in TensorFlow. (https://arxiv
 
 ### Training
 
-*Note: you need at least 40GB of free disk space to train a model.*
-
 1. **Download a speech dataset.**
 
    The following are supported out of the box:
@@ -38,7 +36,6 @@ An implementation of VAE Tacotron speech synthesis in TensorFlow. (https://arxiv
     * [Blizzard 2012](http://www.cstr.ed.ac.uk/projects/blizzard/2012/phase_one) (Creative Commons Attribution Share-Alike)
 
    You can use other datasets if you convert them to the right format. See [TRAINING_DATA.md](TRAINING_DATA.md) for more info.
-
 
 2. **Unpack the dataset into `~/tacotron`**
 
