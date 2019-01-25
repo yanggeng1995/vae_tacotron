@@ -12,7 +12,7 @@ class Synthesizer:
   def load(self, checkpoint_path, model_name='tacotron'):
     print('Constructing model: %s' % model_name)
     inputs = tf.placeholder(tf.int32, [1, None], 'inputs')
-    mel_targets = tf.placeholder(tf.float32, [None, 80], 'mel_targets')
+    mel_targets = tf.placeholder(tf.float32, [1, None, 80], 'mel_targets')
     input_lengths = tf.placeholder(tf.int32, [1], 'input_lengths')
     with tf.variable_scope('model') as scope:
       self.model = create_model(model_name, hparams)

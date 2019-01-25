@@ -32,7 +32,7 @@ def run_eval(args):
   synth.load(args.checkpoint)
   base_path = get_output_base_path(args.checkpoint)
   wav = load_wav(args.reference_audio)
-  mel = melspectrogram(wav)
+  mel = melspectrogram(wav).transpose()
   for i, text in enumerate(sentences):
     path = '%s-%d.wav' % (base_path, i)
     print('Synthesizing: %s' % path)
