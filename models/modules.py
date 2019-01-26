@@ -32,7 +32,7 @@ def ReferenceEncoder(inputs, input_lengths, filters, kernel_size, strides, is_tr
         #GRU
         encoder_outputs, encoder_state = tf.nn.dynamic_rnn(
            cell=GRUCell(128),
-           inputs=inputs,
+           inputs=reference_output,
            sequence_length=input_lengths,
            dtype=tf.float32
         )
