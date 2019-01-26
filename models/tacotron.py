@@ -142,6 +142,7 @@ class Tacotron():
       self.loss = self.mel_loss + self.linear_loss
    
       if hp.use_vae:
+          # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
           self.ki_loss = -0.5 * tf.reduce_sum(1 + self.log_var - tf.pow(self.mu, 2) - tf.exp(self.log_var))
           vae_loss_weight = vae_weight(global_step)
           self.loss += self.ki_loss * vae_loss_weight
