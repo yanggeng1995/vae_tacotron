@@ -3,7 +3,7 @@ from tensorflow.contrib.rnn import GRUCell, MultiRNNCell, OutputProjectionWrappe
 from tensorflow.contrib.seq2seq import BasicDecoder, BahdanauAttention, AttentionWrapper
 from text.symbols import symbols
 from util.infolog import log
-from util.util import shape_list, vae_weight 
+from util.util import shape_list, vae_weight
 from .helpers import TacoTestHelper, TacoTrainingHelper
 from .modules import encoder_cbhg, post_cbhg, prenet, VAE
 from .rnn_wrappers import DecoderPrenetWrapper, ConcatOutputAndAttentionWrapper
@@ -13,7 +13,7 @@ class Tacotron():
     self._hparams = hparams
 
 
-  def initialize(self, inputs, input_lengths, mel_targets=None, mel_lengths=None, linear_targets=None):
+  def initialize(self, inputs, input_lengths, mel_targets=None, linear_targets=None, reference_mel=None):
     '''Initializes the model for inference.
 
     Sets "mel_outputs", "linear_outputs", and "alignments" fields.
@@ -46,10 +46,9 @@ class Tacotron():
       encoder_outputs = encoder_cbhg(prenet_outputs, input_lengths, is_training, # [N, T_in, encoder_depth=256]
                                      hp.encoder_depth)
 
-      if hp.use_vae:
+      if reference_mel is not None:
           style_embeddings, mu, log_var = VAE(
-              inputs=mel_targets,
-              input_lengths=mel_lengths,
+              inputs=reference_mel,
               filters=hp.filters,
               kernel_size=(3, 3),
               strides=(2, 2),
@@ -59,10 +58,24 @@ class Tacotron():
 
           self.mu = mu
           self.log_var = log_var
-          style_embeddings = tf.layers.dense(style_embeddings, hp.encoder_depth)
-          style_embeddings = tf.expand_dims(style_embeddings, axis=1)
-          style_embeddings = tf.tile(style_embeddings, [1, shape_list(encoder_outputs)[1], 1]) # [N, T_in, 256]
-          encoder_outputs = encoder_outputs + style_embeddings
+         
+      else:
+          reference_mel = tf.random_uniform(tf.shape(mel_targets), maxval=1.0, dtype=tf.float32)
+          style_embeddings, mu, log_var = VAE(
+              inputs=reference_mel,
+              filters=hp.filters,
+              kernel_size=(3, 3),
+              strides=(2, 2),
+              num_units=hp.vae_dim,
+              is_training=is_training,
+              scope='vae')
+
+          self.mu = mu
+          self.log_var = log_var
+  
+      style_embeddings = tf.expand_dims(style_embeddings, axis=1)
+      style_embeddings = tf.tile(style_embeddings, [1, shape_list(encoder_outputs)[1], 1]) # [N, T_in, 256]
+      encoder_outputs = encoder_outputs + style_embeddings      
 
       # Attention
       attention_cell = AttentionWrapper(
@@ -114,7 +127,7 @@ class Tacotron():
       self.linear_outputs = linear_outputs
       self.alignments = alignments
       self.mel_targets = mel_targets
-      self.mel_lengths = mel_lengths
+      self.reference_mel = reference_mel
       self.linear_targets = linear_targets
       log('Initialized Tacotron model. Dimensions: ')
       log('  embedding:               %d' % embedded_inputs.shape[-1])

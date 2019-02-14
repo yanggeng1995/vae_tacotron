@@ -12,11 +12,11 @@ class Synthesizer:
   def load(self, checkpoint_path, model_name='tacotron'):
     print('Constructing model: %s' % model_name)
     inputs = tf.placeholder(tf.int32, [1, None], 'inputs')
-    mel_targets = tf.placeholder(tf.float32, [1, None, 80], 'mel_targets')
+    reference_mel = tf.placeholder(tf.float32, [1, None, 80], 'reference_mel')
     input_lengths = tf.placeholder(tf.int32, [1], 'input_lengths')
     with tf.variable_scope('model') as scope:
       self.model = create_model(model_name, hparams)
-      self.model.initialize(inputs, input_lengths, mel_targets)
+      self.model.initialize(inputs, input_lengths, reference_mel=reference_mel)
       self.wav_output = audio.inv_spectrogram_tensorflow(self.model.linear_outputs[0])
 
     print('Loading checkpoint: %s' % checkpoint_path)
@@ -32,7 +32,7 @@ class Synthesizer:
     feed_dict = {
       self.model.inputs: [np.asarray(seq, dtype=np.int32)],
       self.model.input_lengths: np.asarray([len(seq)], dtype=np.int32),
-      self.model.mel_targets: [np.asarray(reference_mel, dtype=np.float32)]
+      self.model.reference_mel: [np.asarray(reference_mel, dtype=np.float32)]
     }
     wav = self.session.run(self.wav_output, feed_dict=feed_dict)
     wav = audio.inv_preemphasis(wav)

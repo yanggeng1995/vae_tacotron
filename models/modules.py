@@ -1,25 +1,28 @@
 import tensorflow as tf
 from tensorflow.contrib.rnn import GRUCell
 from util.util import shape_list
-
-def VAE(inputs, input_lengths, filters, kernel_size, strides, num_units, is_training, scope):
+from hparams import hparams as hp
+ 
+def VAE(inputs, filters, kernel_size, strides, num_units, is_training, scope):
     with tf.variable_scope(scope):
         outputs = ReferenceEncoder(
             inputs=inputs,
-            input_lengths=input_lengths,
             filters=filters,
             kernel_size=kernel_size,
             strides=strides,
             is_training=is_training)
 
-        mu = tf.layers.dense(outputs, num_units, name='mean')
-        log_var = tf.layers.dense(outputs, num_units, name='vari')
+        mu = tf.layers.dense(outputs, num_units, name='mean', activation=tf.nn.relu)
+        log_var = tf.layers.dense(outputs, num_units, name='vari', activation=tf.nn.relu)
         std = tf.exp(log_var * 0.5)
         z = tf.random_normal(shape=[tf.shape(mu)[0], num_units], mean=0.0, stddev=1.0)
         output = mu + z * std
-        return output, mu, log_var
 
-def ReferenceEncoder(inputs, input_lengths, filters, kernel_size, strides, is_training, scope='reference_encoder'):
+        style_embeddings = tf.layers.dense(output, hp.encoder_depth)
+
+        return style_embeddings, mu, log_var
+
+def ReferenceEncoder(inputs, filters, kernel_size, strides, is_training, scope='reference_encoder'):
     with tf.variable_scope(scope):
         reference_output = tf.expand_dims(inputs, axis=-1)
         for i, channel in enumerate(filters):
@@ -33,7 +36,6 @@ def ReferenceEncoder(inputs, input_lengths, filters, kernel_size, strides, is_tr
         encoder_outputs, encoder_state = tf.nn.dynamic_rnn(
            cell=GRUCell(128),
            inputs=reference_output,
-           sequence_length=input_lengths,
            dtype=tf.float32
         )
         return encoder_state

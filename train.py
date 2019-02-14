@@ -32,7 +32,7 @@ def add_stats(model):
     tf.summary.scalar('learning_rate', model.learning_rate)
     tf.summary.scalar('loss', model.loss)
     if hparams.use_vae:
-        tf.summary.scalar('ki_loss', model.ki_loss)
+        tf.summary.scalar('KI_loss', model.ki_loss)
     return tf.summary.merge_all()
 
 
@@ -58,7 +58,7 @@ def train(log_dir, args):
   global_step = tf.Variable(0, name='global_step', trainable=False)
   with tf.variable_scope('model') as scope:
     model = create_model(args.model, hparams)
-    model.initialize(feeder.inputs, feeder.input_lengths, feeder.mel_targets, feeder.mel_lengths, feeder.linear_targets)
+    model.initialize(feeder.inputs, feeder.input_lengths, feeder.mel_targets, feeder.linear_targets)
     model.add_loss(global_step)
     model.add_optimizer(global_step)
     stats = add_stats(model)

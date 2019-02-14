@@ -18,6 +18,10 @@ sentences = [
   'Talib Kweli confirmed to AllHipHop that he will be releasing an album in the next year.',
 ]
 
+tests = [
+ 'I shall not ask him,replied Tom,in a cold,determined manner.',
+ 'No,he is far handsomer than old Blackbird ever was.'
+]
 
 def get_output_base_path(checkpoint_path):
   base_dir = os.path.dirname(checkpoint_path)
@@ -33,7 +37,7 @@ def run_eval(args):
   base_path = get_output_base_path(args.checkpoint)
   wav = load_wav(args.reference_audio)
   mel = melspectrogram(wav).transpose()
-  for i, text in enumerate(sentences):
+  for i, text in enumerate(tests):
     path = '%s-%d.wav' % (base_path, i)
     print('Synthesizing: %s' % path)
     with open(path, 'wb') as f:
@@ -44,6 +48,7 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--checkpoint', required=True, help='Path to model checkpoint')
   parser.add_argument('--reference_audio', required=True)
+  parser.add_argument('--output')
   parser.add_argument('--hparams', default='',
     help='Hyperparameter overrides as a comma-separated list of name=value pairs')
   args = parser.parse_args()

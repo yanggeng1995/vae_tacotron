@@ -30,12 +30,12 @@ hparams = tf.contrib.training.HParams(
   use_vae=True,
   vae_dim=32,
   vae_warming_up=15000,
-  init_vae_weights=0.001, 
-  vae_weight_multiler=0.002,
+  init_vae_weights=0.0001, 
+  vae_weight_multiler=0.0001,
   filters=[32, 32, 64, 64, 128, 128],
  
   # Training:
-  batch_size=32,
+  batch_size=16,
   adam_beta1=0.9,
   adam_beta2=0.999,
   initial_learning_rate=0.002,
@@ -43,7 +43,7 @@ hparams = tf.contrib.training.HParams(
   use_cmudict=False,  # Use CMUDict during training to learn pronunciation of ARPAbet phonemes
 
   # Eval:
-  max_iters=200,
+  max_iters=1000,
   griffin_lim_iters=60,
   power=1.5,              # Power to raise magnitudes to prior to Griffin-Lim
 )
