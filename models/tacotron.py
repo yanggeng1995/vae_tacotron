@@ -46,7 +46,11 @@ class Tacotron():
       encoder_outputs = encoder_cbhg(prenet_outputs, input_lengths, is_training, # [N, T_in, encoder_depth=256]
                                      hp.encoder_depth)
 
-      if reference_mel is not None:
+      if reference_mel is None:
+          if hp.use_vae:
+             reference_mel = tf.random_uniform(tf.shape(mel_targets), maxval=1.0, dtype=tf.float32)
+     
+      if hp.use_vae:
           style_embeddings, mu, log_var = VAE(
               inputs=reference_mel,
               filters=hp.filters,
@@ -59,23 +63,9 @@ class Tacotron():
           self.mu = mu
           self.log_var = log_var
          
-      else:
-          reference_mel = tf.random_uniform(tf.shape(mel_targets), maxval=1.0, dtype=tf.float32)
-          style_embeddings, mu, log_var = VAE(
-              inputs=reference_mel,
-              filters=hp.filters,
-              kernel_size=(3, 3),
-              strides=(2, 2),
-              num_units=hp.vae_dim,
-              is_training=is_training,
-              scope='vae')
-
-          self.mu = mu
-          self.log_var = log_var
-  
-      style_embeddings = tf.expand_dims(style_embeddings, axis=1)
-      style_embeddings = tf.tile(style_embeddings, [1, shape_list(encoder_outputs)[1], 1]) # [N, T_in, 256]
-      encoder_outputs = encoder_outputs + style_embeddings      
+          style_embeddings = tf.expand_dims(style_embeddings, axis=1)
+          style_embeddings = tf.tile(style_embeddings, [1, shape_list(encoder_outputs)[1], 1]) # [N, T_in, 256]
+          encoder_outputs = encoder_outputs + style_embeddings      
 
       # Attention
       attention_cell = AttentionWrapper(
