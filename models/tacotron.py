@@ -13,7 +13,7 @@ class Tacotron():
     self._hparams = hparams
 
 
-  def initialize(self, inputs, input_lengths, mel_targets=None, linear_targets=None, reference_mel=None):
+  def initialize(self, inputs, input_lengths, mel_targets=None, linear_targets=None, reference_mel=None, mel_lengths=None):
     '''Initializes the model for inference.
 
     Sets "mel_outputs", "linear_outputs", and "alignments" fields.
@@ -46,6 +46,9 @@ class Tacotron():
       encoder_outputs = encoder_cbhg(prenet_outputs, input_lengths, is_training, # [N, T_in, encoder_depth=256]
                                      hp.encoder_depth)
 
+      if is_training:
+         reference_mel = mel_targets
+ 
       if reference_mel is None:
           if hp.use_vae:
              reference_mel = tf.random_uniform(tf.shape(mel_targets), maxval=1.0, dtype=tf.float32)
@@ -53,6 +56,7 @@ class Tacotron():
       if hp.use_vae:
           style_embeddings, mu, log_var = VAE(
               inputs=reference_mel,
+              input_lengths=mel_lengths,
               filters=hp.filters,
               kernel_size=(3, 3),
               strides=(2, 2),
